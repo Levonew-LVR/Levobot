@@ -29,4 +29,4 @@ Hola soy un bot de ejemplo de Levo.
 if __name__ == "__main___":
     print("iniciando Bot...")
     app.run() # Corre el bot
-    print("Bot listo para iniciar.")
+    print("Bot Dectenido")
