@@ -56,7 +56,7 @@ async def delete_message(Client, message: Message):
         await message.delete() # Borra el commando 
         comfir = await message.reply_text("Mensaje eliminado...") # Confirma el mensje
         await asyncio.sleep(2) # espera 2 segundos para eliminar un message
-        await comfir = message.delete()
+        await comfir.delete()
     except Exception as e:
         await message.reply(f"Error al eliminar: {e}")
 
