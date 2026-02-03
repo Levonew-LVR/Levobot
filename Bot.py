@@ -20,9 +20,8 @@ app = Client(
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
 async def start_command(Client, message: Message):
-    user = message.from_user
     welcome_text = f"""
-👋 Hola {user.mention} soy un bot de ejemplo de Levo.
+👋 Hola soy un bot de ejemplo de Levo.
 🙂Usa /help para ver que puedo hacer en esto momentos de desarrollo.
     """
     await message.reply_text(welcome_text)
@@ -34,18 +33,26 @@ async def command_help(Client, message: Message):
 
 **Commandos**
 /start - Comenzar 
-/info - ver el id tuyo (en desarrollo)
+/delete - elimmina el mensaje
+/user - ver el id tuyo (en desarrollo)
     """
     await message.reply_text(help_text)
     
 @app.on_message(filters.photo)
 async def handle_photo(Client, message: Message):
     await message.reply_text("He recibido una foto")
-    
-@app.on_message(filters.command("info"))
+
+@app.on_message(filters.command("delete"))
+async def delete_message(Client, message: Message):
+    await message.delete()
+    await message.reply_text("Mensaje eliminado...")
+
+@app.on_message(filters.command("user"))
 async def command_info_user(Client, message: Message):
+    user = message.from_user
     Message_info = f"""
-Tu Id es {message.from_user.id}
+Tu Nombre de usario es @{user.mention}
+Tu Id es {user.id}
     
     """
     await message.reply_text(Message_info)
