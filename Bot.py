@@ -26,7 +26,7 @@ Hola soy un bot de ejemplo de Levo.
     await message.reply_text(welcome_text)
     
 # ===== iniciar el bot ===
-if __name__ == "__main___":
+if __name__ == "__main__":
     print("iniciando Bot...")
     app.run() # Corre el bot
     print("Bot Dectenido")
