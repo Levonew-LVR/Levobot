@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import Message, Photo, Document 
 import os 
 from dotenv import load_dotenv
 
@@ -24,6 +24,18 @@ async def start_command(Client, message: Message):
 Hola soy un bot de ejemplo de Levo.
     """
     await message.reply_text(welcome_text)
+    
+@app.on_message(filters.photo)
+async def handle_photo(Client, message: Message):
+    await message.reply_text("He recibido una foto")
+    
+@app.on_message(filters.command("info"))
+async def command_info_user(Client, message: Message):
+    Message_info = f"""
+Tu Id es {message.from_user.id}
+    
+    """
+    await message.reply_text(Message_info)
     
 # ===== iniciar el bot ===
 if __name__ == "__main__":
