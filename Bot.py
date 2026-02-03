@@ -20,10 +20,23 @@ app = Client(
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
 async def start_command(Client, message: Message):
+    user = message.from_user
     welcome_text = f"""
-Hola soy un bot de ejemplo de Levo.
+👋 Hola {user.mention} soy un bot de ejemplo de Levo.
+🙂Usa /help para ver que puedo hacer en esto momentos de desarrollo.
     """
     await message.reply_text(welcome_text)
+    
+@app.on_message(filters.command("help"))
+async def command_help(Client, message: Message):
+    help_text = """
+😁 En esto momentos estoy en desarrollo, solamente puedes usar
+
+**Commandos**
+/start - Comenzar 
+/info - ver el id tuyo (en desarrollo)
+    """
+    await message.reply_text(help_text)
     
 @app.on_message(filters.photo)
 async def handle_photo(Client, message: Message):
