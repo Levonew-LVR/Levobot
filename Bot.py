@@ -17,6 +17,10 @@ app = Client(
     bot_token=BOT_TOKEN
 )
 
+# Variable global
+
+Admin = [7370035898]
+
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
 async def start_command(Client, message: Message):
@@ -44,20 +48,30 @@ async def handle_photo(Client, message: Message):
 
 @app.on_message(filters.command("delete")  & filters.reply)
 async def delete_message(Client, message: Message):
-    await message.reply_to_message.delete()
-    await message.reply_text("Mensaje eliminado...")
+    if message.from_user.id not in Admin:
+        await message.reply("😕 No eres admin para usar el command")
+        return
+    try:
+        await message.reply_to_message.delete() # Borra el mensaje que respondio 
+        await message.delete() # Borra el commando 
+        comfir = await message.reply_text("Mensaje eliminado...") # Confirma el mensje
+        await asyncio.sleep(2) # espera 2 segundos para eliminar un message
+        await comfir = message.delete()
+    except Exception as e:
+        await message.reply(f"Error al eliminar: {e}")
 
+        
 @app.on_message(filters.command("user"))
 async def command_info_user(Client, message: Message):
-    user = message.from_user
-    Message_info = f"""
-Detalles del usario {user.mention}
-Tu id es {user.id}
-Tu Nombre de usario es @{user.username}
-Nombre y appellido {user.user.first_name} {user.last_name}
-lang (Lenguaje) {user.language_code}
-    """
-    await message.reply_to_message(Message_info)
+    user = message.reply_to_message.from_user
+    Message_info = (
+f"Detalles del usario {user.mention}\n\n"
+f"Tu id es {user.id}\n"
+f"Tu Nombre de usario es @{user.username}\n"
+f"Nombre y appellido {user.first_name} {user.last_name}\n"
+f"lang (Lenguaje) {user.language_code}"
+    )
+    await message.reply_text(Message_info)
     
 # ===== iniciar el bot ===
 if __name__ == "__main__":
