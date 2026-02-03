@@ -42,20 +42,22 @@ async def command_help(Client, message: Message):
 async def handle_photo(Client, message: Message):
     await message.reply_text("He recibido una foto")
 
-@app.on_message(filters.command("delete"))
+@app.on_message(filters.command("delete")  & filters.reply)
 async def delete_message(Client, message: Message):
-    await message.delete()
+    await message.reply_to_message.delete()
     await message.reply_text("Mensaje eliminado...")
 
 @app.on_message(filters.command("user"))
 async def command_info_user(Client, message: Message):
     user = message.from_user
     Message_info = f"""
-Tu Nombre de usario es @{user.mention}
-Tu Id es {user.id}
-    
+Detalles del usario {user.mention}
+Tu id es {user.id}
+Tu Nombre de usario es @{user.username}
+Nombre y appellido {user.user.first_name} {user.last_name}
+lang (Lenguaje) {user.language_code}
     """
-    await message.reply_text(Message_info)
+    await message.reply_to_message(Message_info)
     
 # ===== iniciar el bot ===
 if __name__ == "__main__":
