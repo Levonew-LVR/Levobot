@@ -26,7 +26,7 @@ Admin = [7370035898]
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
 async def start_command(Client, message: Message):
-    user = message.from_user.
+    user = message.from_user
     welcome_text = f"""
 👋 Hola {user.first_name and user.last_name}
 🐰 Soy un simple conejito de prueba.
