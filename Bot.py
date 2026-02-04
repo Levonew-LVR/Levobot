@@ -21,7 +21,7 @@ app = Client(
 
 # Variable global
 
-ADMINS = [7370035898]
+ADMINS = [7370035898,6438282268, 970720634, 5702506445, 5195985707, 7400531692, 6571365927]
 
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
@@ -143,7 +143,7 @@ async def send_user_info(client, message, user, source=""):
     await message.reply_text(user_info)
 
 # Conectamos a la variable con int
-ADMIN_CHAT = 7370035898
+ADMIN_CHAT = 7370035898,6438282268, 970720634, 5702506445, 5195985707, 7400531692, 6571365927
 
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
