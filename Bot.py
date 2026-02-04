@@ -1,8 +1,8 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, Photo, Document 
+from pyrogram.types import Message, Photo
+from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 import os
 import asyncio
-from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 from dotenv import load_dotenv
 
 # = CONFIGURACION DEL BOT =
@@ -21,7 +21,7 @@ app = Client(
 
 # Variable global
 
-Admin = [7370035898]
+Admin = 7370035898
 
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
@@ -53,7 +53,7 @@ async def command_help(client, message: Message):
 async def handle_photo(client, message: Message):
     await message.reply_text("He recibido una foto")
 
-# Comando para Eliminar un mensaje respondido en un chats
+# Comando para Eliminar un mensaje respondido en un chats .delete
 @app.on_message(filters.command("del")  & filters.reply)
 async def delete_message(client, message: Message):
     if message.from_user.id not in Admin:
@@ -145,21 +145,38 @@ async def send_user_info(client, message, user, source=""):
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
 async def comand_forward(client, message: Message):
-    chat_destino = 7370035898 # Renvia el mensaje al chat del admin(variable)
-    await message.forward(chat_destino)
+    # Renvia el mensaje respondido
+    if not message.reply_to_message:
+        await message.reply("Responde al mensaje que quieres reportar.")
+    return
+
+    try:
+        # renvia el chat al reporte enviado
+        await message.reply_to_message.forward(Admin)
+        
+        # Información del usuario que reporta
+        user = message.from_user
+        user_repor = message.reply_to_message.from_user # esto es para reportar al usario mencionado en un chat espesifico
+        chat = message.chat # esto es para obtener el chat espesifico, de un chat group o pv
+        
     
-    #agregamos contexto del nombre usario y chat
-    user = message.from_user
     text_report = f"""
-Reporte del Usarios
-Usario: {user.first_name} @{user.username}
-Id: {user.id}
-chat: {message.chat.title}
+👤 Reporte del Usarios
+Usario: {'@' user.username or user.first_name}
+Usario reportado {user_repor.mention} { 'ID: ' user_repor.id}
+chat: {message.chat.title or 'En pv'} {chat.id}
+fecha: {message.date}
+Mensaje reportado {message.reply_to_message.id}
     """
     
-    await client.send_message(
-        chat_destino,text_report
-        )
+        await client.send_message(
+        Admin,text_report
+        ) # esta funcion es para compartir tanto la Información del mensaje y Usario.
+        
+        await message.reply("reporte enviado") # esto va a salir tanto en chat pv y group
+    except Exception as e:
+        await message.reply(f"Error al enviar el Mensaje. {e}") # Esto es para Saber el error del mensaje
+    
 
 # ===== iniciar el bot ===
 if __name__ == "__main__":
