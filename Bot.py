@@ -25,10 +25,10 @@ Admin = [7370035898]
 
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
-async def start_command(Client, message: Message):
+async def start_command(client, message: Message):
     user = message.from_user
     welcome_text = f"""
-👋 Hola {user.first_name and user.last_name}
+👋 Hola {user.first_name} {user.last_name}
 🐰 Soy un simple conejito de prueba.
 
 Usa /help para ver que puedo hacer.
@@ -36,7 +36,7 @@ Usa /help para ver que puedo hacer.
     await message.reply_text(welcome_text)
     
 @app.on_message(filters.command("help"))
-async def command_help(Client, message: Message):
+async def command_help(client, message: Message):
     help_text = """
 😁 En esto momento mi dueño (🐰Levo) me está desarrollando.
 
@@ -49,12 +49,12 @@ async def command_help(Client, message: Message):
  
 # handle_photo para recibir una foto   
 @app.on_message(filters.photo)
-async def handle_photo(Client, message: Message):
+async def handle_photo(client, message: Message):
     await message.reply_text("He recibido una foto")
 
 # Comando para Eliminar un mensaje respondido en un chats
 @app.on_message(filters.command("delete")  & filters.reply)
-async def delete_message(Client, message: Message):
+async def delete_message(client, message: Message):
     if message.from_user.id not in Admin:
         await message.reply("😕 No eres admin para usar el command")
         return
@@ -69,7 +69,7 @@ async def delete_message(Client, message: Message):
 
 # Command para ver la información del usuarios
 @app.on_message(filters.command("user"))
-async def command_info_user(Client, message: Message):
+async def command_info_user(client, message: Message):
      # Comando con argumento (username o ID)
     if len(message.command) > 1:
         target = message.command[1]
@@ -128,7 +128,7 @@ async def send_user_info(client, message, user, source=""):
 
 🆔 {user.id}
 📧 Usuario @{user.username or 'no tiene'}
-👤 Nombre y apellido {user.first_name and user.last_name or 'no tiene'}
+👤 Nombre y apellido {user.first_name} {user.last_name or 'no tiene'}
 🌐 Lang {user.language_code or 'desconocido'}
 🤖 Bot {'Si' if user.is_bot else 'No'}
 💎 Premium {'Si' if user.is_premium else 'No'}
