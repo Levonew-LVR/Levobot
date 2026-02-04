@@ -45,6 +45,7 @@ async def command_help(client, message: Message):
 /del - Elimina un mensaje respondiendo un chat (admin)
 /user - Ver información 
 /ren - renvia un mensaje a un grupo elegido(test)
+/bk - Hace una copia a un chats destiando (test)
     """
     await message.reply_text(help_text)
  
@@ -148,6 +149,19 @@ async def forward_to_chat(client, message: Message):
     chat_group = -1002980811722 #Grupo de admin
     await message.forward(chat_group)
     await message.reply("Mensaje renviado al grupo")
+
+# Reenviar varios mensajes
+@app.on_message(filters.command("bk"))
+async def backup_messages(client, message: Message):
+    chat_origen = message.chat.id
+    chat_destino = -1002980811722
+    
+    # Reenviar los últimos 5 mensajes
+    async for msg in client.get_chat_history(chat_origen, limit=5):
+        await msg.forward(chat_destino)
+        await asyncio.sleep(2)  # Para no floodear
+    
+    await message.reply("Backup completado ✓")
     
     
 # ===== iniciar el bot ===
