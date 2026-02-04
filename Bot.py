@@ -160,14 +160,14 @@ async def comand_forward(client, message: Message):
         chat = message.chat # esto es para obtener el chat espesifico, de un chat group o pv
         
     
-    text_report = f"""
+        text_report = f"""
 👤 Reporte del Usarios
 Usario: {'@' user.username or user.first_name}
 Usario reportado {user_repor.mention} { 'ID: ' user_repor.id}
 chat: {message.chat.title or 'En pv'} {chat.id}
 fecha: {message.date}
 Mensaje reportado {message.reply_to_message.id}
-    """
+        """
     
         await client.send_message(
         Admin,text_report
