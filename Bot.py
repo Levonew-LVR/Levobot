@@ -145,7 +145,7 @@ async def send_user_info(client, message, user, source=""):
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
 async def comand_forward(client, message: Message):
-    chat_destino = Admin # Renvia el mensaje al chat del admin(variable)
+    chat_destino = 7370035898 # Renvia el mensaje al chat del admin(variable)
     await message.forward(chat_destino)
     
     #agregamos contexto del nombre usario y chat
