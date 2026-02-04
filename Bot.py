@@ -1,9 +1,10 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message, Photo, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
+from pyrogram.enums import ParseMode
+import logging
 import os
 import asyncio
-import logging
 from dotenv import load_dotenv
 
 # = CONFIGURACION DEL BOT =
@@ -152,7 +153,7 @@ async def send_user_info(client, message, user, source=""):
     await message.reply_text(user_info)
 
 # Conectamos a la variable con int
-ADMIN_CHAT = 7370035898,6438282268, 970720634, 5702506445, 5195985707, 7400531692, 6571365927
+ADMIN_CHAT = -1003534613315
 
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
@@ -170,7 +171,7 @@ async def comand_forward(client, message: Message):
         # Obtener motivo si se proporcionó
         mensaje_reportado = message.reply_to_message
 
-        await mensaje_reportado.forward(admin_chat_id)
+        await mensaje_reportado.forward(ADMIN_CHAT)
 
         # Información
         user = message.from_user
@@ -183,11 +184,12 @@ async def comand_forward(client, message: Message):
             chat_id_str = str(chat.id)[4:]  # Quitar el -100
             message_link = f"https://t.me/c/{chat_id_str}/{message.reply_to_message.id})"
             
-        teclado = InlineKeyboardMarkup([
-            [
-            InlineKeyboardButton("Ver Mensaje", url=f"{message_link}")
-            ]
-        ])
+        # Crear teclado si hay enlace
+        reply_markup = None
+        if message_link:
+            reply_markup = InlineKeyboardMarkup([
+                [InlineKeyboardButton("Ver Mensaje", url=message_link)]
+            ])
         
         text_report = f"""
 👤 **Reporte del Usarios**
@@ -196,11 +198,11 @@ Motivo: {reason}
 **Info user**
 Usario: {user.mention} ID {user.id}
 Usarios Reportado: {user_repor.mention} ID {user_repor.id}
-chat: {message.chat.title or 'Chat pv'} {chat.id}
+chat: {message.chat.title or 'Chat pv'} 
 fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
         """
     
-        await client.send_message(ADMIN_CHAT, text_report, reply_markup=teclado) # esta funcion es para compartir tanto la Información del mensaje y Usario.
+        await client.send_message(ADMIN_CHAT, text_report, reply_markup=reply_markup) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
         await message.reply(
             f"🙂 Tu reporte ha sido enviado a los admin (será atendido en el grupo de [soporte]",
@@ -221,17 +223,23 @@ async def enviar_reporte_general(client, message, reason):
         reporter = message.from_user
         chat = message.chat
         
+        reply_markup = None
+        if message_link:
+            reply_markup = InlineKeyboardMarkup([
+                [InlineKeyboardButton("Ver Mensaje", url=message_link)]
+            ])
+        
         text_report = f"""
 👤 **Reporte del Usuario**
 Motivo: {reason}
 
 **Info user**
 Usuario: {reporter.mention if reporter.mention else reporter.first_name} ID {reporter.id}
-Chat: {chat.title or 'Chat privado'} (ID: {chat.id})
+Chat: {chat.title or 'Chat privado'}
 Fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
         """
         
-        await client.send_message(ADMIN_CHAT, text_report)
+        await client.send_message(ADMIN_CHAT, text_report, reply_markup=reply_markup)
         
         # Confirmación
         await message.reply(
