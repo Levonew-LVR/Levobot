@@ -142,40 +142,49 @@ async def send_user_info(client, message, user, source=""):
     """
     await message.reply_text(user_info)
 
+# Conectamos a la variable con int
+ADMIN_CHAT = Admin
+
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
 async def comand_forward(client, message: Message):
+   
     # Renvia el mensaje respondido
     if not message.reply_to_message:
-        await message.reply("Responde al mensaje que quieres reportar.")
-    return
-
+        reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
+        await message.reply("Escribe o responde al mensaje especifico")
+        return
+    
     try:
+        # Obtener motivo si se proporcionó
+        reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
+        
         # renvia el chat al reporte enviado
-        await message.reply_to_message.forward(Admin)
+        await message.reply_to_message.forward(ADMIN_CHAT)
         
         # Información del usuario que reporta
-        user = message.from_user
+        user = message.from_user # Quien reporto
         user_repor = message.reply_to_message.from_user # esto es para reportar al usario mencionado en un chat espesifico
         chat = message.chat # esto es para obtener el chat espesifico, de un chat group o pv
         
     
         text_report = f"""
-👤 Reporte del Usarios
+👤 **Reporte del Usarios**
+Motivo: {reason}
 Usario: @{user.username or user.first_name}
 Usario reportado {user_repor.mention} ID:{user_repor.id}
 chat: {message.chat.title or 'En pv'} {chat.id}
-fecha: {message.date}
-Mensaje reportado {message.reply_to_message.id}
+fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
+
+link to message https://t.me/c/{str(abs(chat.id))[4:]}/{message.reply_to_message.id if chat.id < 0 else ''}
+
         """
     
-        await client.send_message(
-        Admin,text_report
-        ) # esta funcion es para compartir tanto la Información del mensaje y Usario.
+        await client.send_message(ADMIN_CHAT, text_report) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
-        await message.reply("reporte enviado") # esto va a salir tanto en chat pv y group
+        await message.reply("Reporte enviado a los admin") # esto va a salir tanto en chat pv y group
     except Exception as e:
-        await message.reply(f"Error al enviar el Mensaje. {e}") # Esto es para Saber el error del mensaje
+        await message.reply(f"Error al enviar el Mensaje. {str(e)[:100]}") # Esto es para Saber el error del mensaje
     
 
 # ===== iniciar el bot ===
