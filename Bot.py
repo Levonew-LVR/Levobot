@@ -42,8 +42,9 @@ async def command_help(client, message: Message):
 
 **Commandos Disponible**
 /start - Comenzar 
-/delete - Elimina un mensaje respondiendo un chat (admin)
+/del - Elimina un mensaje respondiendo un chat (admin)
 /user - Ver información 
+/ren - renvia un mensaje a un grupo elegido(test)
     """
     await message.reply_text(help_text)
  
@@ -53,7 +54,7 @@ async def handle_photo(client, message: Message):
     await message.reply_text("He recibido una foto")
 
 # Comando para Eliminar un mensaje respondido en un chats
-@app.on_message(filters.command("delete")  & filters.reply)
+@app.on_message(filters.command("del")  & filters.reply)
 async def delete_message(client, message: Message):
     if message.from_user.id not in Admin:
         await message.reply("😕 No eres admin para usar el command")
@@ -127,11 +128,11 @@ async def send_user_info(client, message, user, source=""):
 **👤 Información del usuario**{source_text}
 
 🆔 {user.id}
-📧 Usuario @{user.username or 'no tiene'}
-👤 Nombre y apellido {user.first_name} {user.last_name or 'no tiene'}
-🌐 Lang {user.language_code or 'desconocido'}
-🤖 Bot {'Si' if user.is_bot else 'No'}
-💎 Premium {'Si' if user.is_premium else 'No'}
+📧 Usuario @{user.username}
+👤 {user.first_name} {user.last_name}
+🌐 Lang "{user.language_code or 'desconocido'}"
+🤖 Bot "{'Si' if user.is_bot else 'No'}"
+💎 Premium "{'Si' if user.is_premium else 'No'}"
 
 **Como Utilizar**
 /user  - Muestra tu información(sin argumentos)
@@ -140,6 +141,14 @@ async def send_user_info(client, message, user, source=""):
 /user [Respondiendo un  mensaje de un user o bot en grupos o chat pv] - Muestra info del usuario respondido
     """
     await message.reply_text(user_info)
+    
+# Comando para enviar Mensaje a un chat especifico
+@app.on_message(filters.command("ren"))
+async def forward_to_chat(client, message: Message):
+    chat_group = -1002980811722 #Grupo de admin
+    await message.forward(chat_group)
+    await message.reply("Mensaje renviado al grupo")
+    
     
 # ===== iniciar el bot ===
 if __name__ == "__main__":
