@@ -21,7 +21,7 @@ app = Client(
 
 # Variable global
 
-Admin = 7370035898
+ADMINS = [7370035898]
 
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
@@ -56,7 +56,7 @@ async def handle_photo(client, message: Message):
 # Comando para Eliminar un mensaje respondido en un chats .delete
 @app.on_message(filters.command("del")  & filters.reply)
 async def delete_message(client, message: Message):
-    if message.from_user.id not in Admin:
+    if message.from_user.id not in ADMINS:
         await message.reply("😕 No eres admin para usar el command")
         return
     try:
@@ -143,7 +143,7 @@ async def send_user_info(client, message, user, source=""):
     await message.reply_text(user_info)
 
 # Conectamos a la variable con int
-ADMIN_CHAT = Admin
+ADMIN_CHAT = 7370035898
 
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
@@ -152,6 +152,9 @@ async def comand_forward(client, message: Message):
     # Renvia el mensaje respondido
     if not message.reply_to_message:
         reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
+        
+        # Enviar reporte general (sin mensaje específico)
+        await send_general_report(client, message, reason)
         return
     
     try:
@@ -166,25 +169,57 @@ async def comand_forward(client, message: Message):
         user_repor = message.reply_to_message.from_user # esto es para reportar al usario mencionado en un chat espesifico
         chat = message.chat # esto es para obtener el chat espesifico, de un chat group o pv
         
+        # Para generar el Enlace en caso de ser supergruo o canal
+        message_link = ""
+        if chat.id < 0:  # Es un grupo/canal (ID negativo)
+            chat_id_str = str(chat.id)[4:]  # Quitar el -100
+            message_link = f"\nLink to message: (https://t.me/c/{chat_id_str}/{message.reply_to_message.id})"
     
+        
         text_report = f"""
 👤 **Reporte del Usarios**
 Motivo: {reason}
-Usario: @{user.username or user.first_name}
-Usario reportado {user_repor.mention} ID:{user_repor.id}
-chat: {message.chat.title or 'En pv'} {chat.id}
+
+**Info user**
+Usario: {user.mention} ID {user.id}
+Usarios Reportado: {user_repor.mention} ID {user_repor.id}
+chat: {message.chat.title or 'Chat pv'} {chat.id}
 fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
-
-link to message https://t.me/c/{str(abs(chat.id))[4:]}/{message.reply_to_message.id if chat.id < 0 else ''}
-
+{message_link}
         """
     
         await client.send_message(ADMIN_CHAT, text_report) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
-        await message.reply("Reporte enviado a los admin") # esto va a salir tanto en chat pv y group
+        await message.reply(f"El Reporte a sido enviado a los administradores") # esto va a salir tanto en chat pv y group
     except Exception as e:
         await message.reply(f"Error al enviar el Mensaje. {str(e)[:100]}") # Esto es para Saber el error del mensaje
-    
+
+# Este es para recbir el motivo    
+async def send_general_report(client, message, reason):
+    """Enviar reporte general (sin mensaje específico)"""
+    try:
+        reporter = message.from_user
+        chat = message.chat
+        
+        text_report = f"""
+👤 **Reporte General**
+Motivo: {reason}
+
+**Reportado por:** {reporter.mention}
+**Chat:** {chat.title or 'Chat pv'}
+**ID Chat:** `{chat.id}`
+**Fecha:** {message.date.strftime('%d/%m/%Y %H:%M')}
+        """
+        
+        # Enviar al admin
+        await client.send_message(ADMIN_CHAT, text_report)
+        
+        # Confirmación
+        await message.reply(
+            f"Reporte general a sido enviado a los administradores, pronto se revisarán tu solicitud."
+        )
+    except Exception as e:
+        await message.reply(f"Error al enviar el mensaje: {str(e)[:100]}")
 
 # ===== iniciar el bot ===
 if __name__ == "__main__":
