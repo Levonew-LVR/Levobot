@@ -44,8 +44,7 @@ async def command_help(client, message: Message):
 /start - Comenzar 
 /del - Elimina un mensaje respondiendo un chat (admin)
 /user - Ver información 
-/ren - renvia un mensaje a un grupo elegido(test)
-/bk - Hace una copia a un chats destiando (test)
+/report - para reportar un Error en espesifico(test)
     """
     await message.reply_text(help_text)
  
@@ -142,28 +141,26 @@ async def send_user_info(client, message, user, source=""):
 /user [Respondiendo un  mensaje de un user o bot en grupos o chat pv] - Muestra info del usuario respondido
     """
     await message.reply_text(user_info)
-    
-# Comando para enviar Mensaje a un chat especifico
-@app.on_message(filters.command("ren"))
-async def forward_to_chat(client, message: Message):
-    chat_group = -1002980811722 #Grupo de admin
-    await message.forward(chat_group)
-    await message.reply("Mensaje renviado al grupo")
 
-# Reenviar varios mensajes
-@app.on_message(filters.command("bk"))
-async def backup_messages(client, message: Message):
-    chat_origen = message.chat.id
-    chat_destino = -1002980811722
+# Commando para reportar errores con message.forward()
+@app.on_message(filters.command("report"))
+async def comand_forward(client, message: Message):
+    chat_destino = Admin # Renvia el mensaje al chat del admin(variable)
+    await message.forward(chat_destino)
     
-    # Reenviar los últimos 5 mensajes
-    async for msg in client.get_chat_history(chat_origen, limit=5):
-        await msg.forward(chat_destino)
-        await asyncio.sleep(2)  # Para no floodear
+    #agregamos contexto del nombre usario y chat
+    user = message.from_user
+    text_report = f"""
+Reporte del Usarios
+Usario: {user.first_name} @{user.username}
+Id: {user.id}
+chat: {message.chat.title}
+    """
     
-    await message.reply("Backup completado ✓")
-    
-    
+    await client.send_message(
+        chat_destino,text_report
+        )
+
 # ===== iniciar el bot ===
 if __name__ == "__main__":
     print("iniciando Bot...")
