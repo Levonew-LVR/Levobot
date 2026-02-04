@@ -203,7 +203,7 @@ fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
         await client.send_message(ADMIN_CHAT, text_report, reply_markup=teclado) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
         await message.reply(
-            f"🙂 Tu reporte ha sido enviado a los admin (será atendido en el grupo de [soporte](https://t.me/grupcompresize))",
+            f"🙂 Tu reporte ha sido enviado a los admin (será atendido en el grupo de [soporte]",
             parse_mode=ParseMode.MARKDOWN
         ) # esto va a salir tanto en chat pv y group
         
@@ -221,12 +221,6 @@ async def enviar_reporte_general(client, message, reason):
         reporter = message.from_user
         chat = message.chat
         
-        teclado = InlineKeyboardMarkup([
-            [
-            InlineKeyboardButton("Ver Mensaje", url=f"{message_link}")
-            ]
-        ])
-        
         text_report = f"""
 👤 **Reporte del Usuario**
 Motivo: {reason}
@@ -237,7 +231,7 @@ Chat: {chat.title or 'Chat privado'} (ID: {chat.id})
 Fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
         """
         
-        await client.send_message(admin_chat_id, text_report, reply_markup=teclado)
+        await client.send_message(ADMIN_CHAT, text_report)
         
         # Confirmación
         await message.reply(
