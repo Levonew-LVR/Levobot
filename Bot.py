@@ -162,7 +162,7 @@ async def comand_forward(client, message: Message):
     
         text_report = f"""
 👤 Reporte del Usarios
-Usario: {'@' user.username or user.first_name}
+Usario: @{user.username or user.first_name}
 Usario reportado {user_repor.mention} { 'ID: ' user_repor.id}
 chat: {message.chat.title or 'En pv'} {chat.id}
 fecha: {message.date}
