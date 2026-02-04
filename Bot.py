@@ -152,7 +152,6 @@ async def comand_forward(client, message: Message):
     # Renvia el mensaje respondido
     if not message.reply_to_message:
         reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
-        await message.reply("Escribe o responde al mensaje especifico")
         return
     
     try:
