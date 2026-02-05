@@ -1,5 +1,4 @@
 pyrogram
-TgCrypto
-asyncio
+tgcrypto
 python-dotenv
-
+pymongo[srv]
