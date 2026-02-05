@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, Photo
+from pyrogram.types import Message, Photo, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 import os
 import asyncio
@@ -149,7 +149,7 @@ ADMIN_CHAT = -1003534613315
 @app.on_message(filters.command("report"))
 async def comand_forward(client, message: Message):
    
-    # Renvia el mensaje respondido
+    # Renvia el mensaje respondido con razon
     if not message.reply_to_message:
         reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
         
@@ -166,15 +166,18 @@ async def comand_forward(client, message: Message):
         
         # Información del usuario que reporta
         user = message.from_user # Quien reporto
-        user_repor = message.reply_to_message.from_user # esto es para reportar al usario mencionado en un chat espesifico
+        user_repor = message.reply_to_message.from_user # al que lo menciono
         chat = message.chat # esto es para obtener el chat espesifico, de un chat group o pv
         
         # Para generar el Enlace en caso de ser supergruo o canal
         message_link = ""
         if chat.id < 0:  # Es un grupo/canal (ID negativo)
             chat_id_str = str(chat.id)[4:]  # Quitar el -100
-            message_link = f"\nLink to message: (https://t.me/c/{chat_id_str}/{message.reply_to_message.id})"
-    
+            message_link = f"https://t.me/c/{chat_id_str}/{message.reply_to_message.id}"
+        
+        teclado = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Ver mensaje", url=message_link)]
+            ])
         
         text_report = f"""
 👤 **Reporte del Usarios**
@@ -183,16 +186,15 @@ Motivo: {reason}
 **Info user**
 Usario: {user.mention} ID {user.id}
 Usarios Reportado: {user_repor.mention} ID {user_repor.id}
-chat: {message.chat.title or 'Chat pv'} {chat.id}
+chat: {message.chat.title or 'Chat pv'} 
 fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
-{message_link}
         """
     
-        await client.send_message(ADMIN_CHAT, text_report) # esta funcion es para compartir tanto la Información del mensaje y Usario.
+        await client.send_message(ADMIN_CHAT, text_report, reply_markup=teclado) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
-        await message.reply(f"El Reporte a sido enviado a los administradores") # esto va a salir tanto en chat pv y group
+        await message.reply(f"🙂 Su reporte a sido enviado a los admin pronto será atendido.") # esto va a salir tanto en chat pv y group
     except Exception as e:
-        await message.reply(f"Error al enviar el Mensaje. {str(e)[:100]}") # Esto es para Saber el error del mensaje
+        await message.reply(f"Error al enviar el mensaje. {str(e)[:100]}") # Esto es para Saber el error del mensaje
 
 # Este es para recbir el motivo    
 async def send_general_report(client, message, reason):
@@ -205,18 +207,17 @@ async def send_general_report(client, message, reason):
 👤 **Reporte General**
 Motivo: {reason}
 
-**Reportado por:** {reporter.mention}
-**Chat:** {chat.title or 'Chat pv'}
-**ID Chat:** `{chat.id}`
+**Por :** {reporter.mention} ID {chat.id}
+**Chat:** {message.chat.title or 'Chat pv'} 
 **Fecha:** {message.date.strftime('%d/%m/%Y %H:%M')}
         """
         
         # Enviar al admin
-        await client.send_message(ADMIN_CHAT, text_report)
+        await client.send_message(ADMIN_CHAT, text_report, reply_markup=teclado)
         
         # Confirmación
         await message.reply(
-            f"Reporte general a sido enviado a los administradores, pronto se revisarán tu solicitud."
+            f"🙂 Su reporte  general a sido enviado a los admin pronto será atendido."
         )
     except Exception as e:
         await message.reply(f"Error al enviar el mensaje: {str(e)[:100]}")
