@@ -21,7 +21,7 @@ app = Client(
 
 # Variable global
 
-ADMINS = [7370035898,6438282268, 970720634, 5702506445, 5195985707, 7400531692, 6571365927]
+ADMINS = [7370035898]
 
 # Manejador para el comando /start
 @app.on_message(filters.command("start"))
