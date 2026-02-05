@@ -1,8 +1,6 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, Photo, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from pyrogram.types import Message, Photo
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
-from pyrogram.enums import ParseMode
-import logging
 import os
 import asyncio
 from dotenv import load_dotenv
@@ -22,14 +20,6 @@ app = Client(
 )
 
 # Variable global
-
-# Configurar logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
 
 ADMINS = [7370035898,6438282268, 970720634, 5702506445, 5195985707, 7400531692, 6571365927]
 
@@ -160,36 +150,31 @@ ADMIN_CHAT = -1003534613315
 async def comand_forward(client, message: Message):
    
     # Renvia el mensaje respondido
-    reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
-    
-    # Enviar reporte general (sin responder message)
     if not message.reply_to_message:
-        await enviar_reporte_general(client, message, reason)
+        reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
+        
+        # Enviar reporte general (sin mensaje específico)
+        await send_general_report(client, message, reason)
         return
-
+    
     try:
         # Obtener motivo si se proporcionó
-        mensaje_reportado = message.reply_to_message
-
-        await mensaje_reportado.forward(ADMIN_CHAT)
-
-        # Información
-        user = message.from_user
-        user_repor = mensaje_reportado.from_user
-        chat = message.chat
-
+        reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
+        
+        # renvia el chat al reporte enviado
+        await message.reply_to_message.forward(ADMIN_CHAT)
+        
+        # Información del usuario que reporta
+        user = message.from_user # Quien reporto
+        user_repor = message.reply_to_message.from_user # esto es para reportar al usario mencionado en un chat espesifico
+        chat = message.chat # esto es para obtener el chat espesifico, de un chat group o pv
+        
         # Para generar el Enlace en caso de ser supergruo o canal
         message_link = ""
         if chat.id < 0:  # Es un grupo/canal (ID negativo)
             chat_id_str = str(chat.id)[4:]  # Quitar el -100
-            message_link = f"https://t.me/c/{chat_id_str}/{message.reply_to_message.id})"
-            
-        # Crear teclado si hay enlace
-        reply_markup = None
-        if message_link:
-            reply_markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton("Ver Mensaje", url=message_link)]
-            ])
+            message_link = f"\nLink to message: (https://t.me/c/{chat_id_str}/{message.reply_to_message.id})"
+    
         
         text_report = f"""
 👤 **Reporte del Usarios**
@@ -198,60 +183,43 @@ Motivo: {reason}
 **Info user**
 Usario: {user.mention} ID {user.id}
 Usarios Reportado: {user_repor.mention} ID {user_repor.id}
-chat: {message.chat.title or 'Chat pv'} 
+chat: {message.chat.title or 'Chat pv'} {chat.id}
 fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
+{message_link}
         """
     
-        await client.send_message(ADMIN_CHAT, text_report, reply_markup=reply_markup) # esta funcion es para compartir tanto la Información del mensaje y Usario.
+        await client.send_message(ADMIN_CHAT, text_report) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
-        await message.reply(
-            f"🙂 Tu reporte ha sido enviado a los admin (será atendido en el grupo de [soporte]",
-            parse_mode=ParseMode.MARKDOWN
-        ) # esto va a salir tanto en chat pv y group
-        
-        logger.info(
-            f"Reporte enviado por {user.id}"
-        )
+        await message.reply(f"El Reporte a sido enviado a los administradores") # esto va a salir tanto en chat pv y group
     except Exception as e:
-        logger.error(f"Error /report: {e}")
-        await message.reply(f"Error al enviar el Mensaje.\n\n Usa /report mensjae - para reportar \n\nmotivo:{str(e)[:100]}") # Esto es para Saber el error del mensaje
+        await message.reply(f"Error al enviar el Mensaje. {str(e)[:100]}") # Esto es para Saber el error del mensaje
 
-# Este es para recibir el motivo    
-async def enviar_reporte_general(client, message, reason):
+# Este es para recbir el motivo    
+async def send_general_report(client, message, reason):
     """Enviar reporte general (sin mensaje específico)"""
     try:
         reporter = message.from_user
         chat = message.chat
         
-        reply_markup = None
-        if message_link:
-            reply_markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton("Ver Mensaje", url=message_link)]
-            ])
-        
         text_report = f"""
-👤 **Reporte del Usuario**
+👤 **Reporte General**
 Motivo: {reason}
 
-**Info user**
-Usuario: {reporter.mention if reporter.mention else reporter.first_name} ID {reporter.id}
-Chat: {chat.title or 'Chat privado'}
-Fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
+**Reportado por:** {reporter.mention}
+**Chat:** {chat.title or 'Chat pv'}
+**ID Chat:** `{chat.id}`
+**Fecha:** {message.date.strftime('%d/%m/%Y %H:%M')}
         """
         
-        await client.send_message(ADMIN_CHAT, text_report, reply_markup=reply_markup)
+        # Enviar al admin
+        await client.send_message(ADMIN_CHAT, text_report)
         
         # Confirmación
         await message.reply(
-            f"🙂 Tu reporte general ha sido enviado a los admin (será atendido en el grupo de [soporte](https://t.me/grupcompresize))",
-            parse_mode=ParseMode.MARKDOWN
+            f"Reporte general a sido enviado a los administradores, pronto se revisarán tu solicitud."
         )
-        
-        logger.info(f"Reporte general enviado por {reporter.id}")
-
     except Exception as e:
-        logger.error(f"Error reporte general: {e}")
-        await message.reply(f"Error al enviar el mensaje:\n\nUsa /report selecionando el mensjae y el Motivo\n\n motivo:{str(e)[:100]}")
+        await message.reply(f"Error al enviar el mensaje: {str(e)[:100]}")
 
 # ===== iniciar el bot ===
 if __name__ == "__main__":
