@@ -142,17 +142,16 @@ async def send_user_info(client, message, user, source=""):
     """
     await message.reply_text(user_info)
 
-# Conectamos a la variable con int
+# Conectamos al grupo
 ADMIN_CHAT = -1003534613315
 
 # Commando para reportar errores con message.forward()
 @app.on_message(filters.command("report"))
 async def comand_forward(client, message: Message):
-   
+    reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
+        
     # Renvia el mensaje respondido con razon
     if not message.reply_to_message:
-        reason = " ".join(message.command[1:]) if len(message.command) > 1 else "Sin motivo especificado"
-        
         # Enviar reporte general (sin mensaje específico)
         await send_general_report(client, message, reason)
         return
@@ -172,11 +171,13 @@ async def comand_forward(client, message: Message):
         # Para generar el Enlace en caso de ser supergruo o canal
         message_link = ""
         if chat.id < 0:  # Es un grupo/canal (ID negativo)
-            chat_id_str = str(chat.id)[4:]  # Quitar el -100
+            chat_id_str = str(abs(chat.id))[4:]  # Quitar el -100
             message_link = f"https://t.me/c/{chat_id_str}/{message.reply_to_message.id}"
         
-        teclado = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Ver mensaje", url=message_link)]
+        teclado = None 
+        if message_link:
+            teclado = InlineKeyboardMarkup([
+                [InlineKeyboardButton("Ver mensaje", url=message_link)]
             ])
         
         text_report = f"""
@@ -184,13 +185,17 @@ async def comand_forward(client, message: Message):
 Motivo: {reason}
 
 **Info user**
-Usario: {user.mention} ID {user.id}
+Usario: {user.mention}  ID {user.id} 
 Usarios Reportado: {user_repor.mention} ID {user_repor.id}
 chat: {message.chat.title or 'Chat pv'} 
 fecha: {message.date.strftime('%d/%m/%Y %H:%M')}
         """
     
-        await client.send_message(ADMIN_CHAT, text_report, reply_markup=teclado) # esta funcion es para compartir tanto la Información del mensaje y Usario.
+        await client.send_message(
+            ADMIN_CHAT,
+            text_report,
+            reply_markup=teclado
+        ) # esta funcion es para compartir tanto la Información del mensaje y Usario.
         
         await message.reply(f"🙂 Su reporte a sido enviado a los admin pronto será atendido.") # esto va a salir tanto en chat pv y group
     except Exception as e:
@@ -213,7 +218,10 @@ Motivo: {reason}
         """
         
         # Enviar al admin
-        await client.send_message(ADMIN_CHAT, text_report, reply_markup=teclado)
+        await client.send_message(
+            ADMIN_CHAT,
+            text_report
+        )
         
         # Confirmación
         await message.reply(
